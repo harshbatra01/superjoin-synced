@@ -8,6 +8,21 @@ To build a scalable, "multiplayer-ready" sync engine that handles high-frequency
 
 ---
 
+## 💎 Developer Documentation (DeepWiki)
+
+This repository is fully documented using **Devin DeepWiki**, which provides a structured, explorable breakdown of:
+
+- System architecture and data flow
+- Sync engine internals and worker logic
+- Edge-case handling and design decisions
+- Database schema and queue processing model
+
+🔗 **DeepWiki:** https://deepwiki.devin.ai/your-username/sheetql-sync
+
+If you want to understand *why* certain design choices were made—not just *what* the code does—this is the best place to start.
+
+---
+
 ## 💎 My Approach & Intuition
 I approached this not as a simple API integration, but as a **Distributed Systems** problem. 
 
@@ -84,22 +99,6 @@ For a deeper breakdown of the database schema, worker logic, and internal data f
 
 
 ---
-
-## 💎 Developer Documentation (DeepWiki)
-
-This repository is fully documented using **Devin DeepWiki**, which provides a structured, explorable breakdown of:
-
-- System architecture and data flow
-- Sync engine internals and worker logic
-- Edge-case handling and design decisions
-- Database schema and queue processing model
-
-🔗 **DeepWiki:** https://deepwiki.devin.ai/your-username/sheetql-sync
-
-If you want to understand *why* certain design choices were made—not just *what* the code does—this is the best place to start.
-
----
-
 
 ## 💎 Tech Stack
 
