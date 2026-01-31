@@ -17,7 +17,8 @@ This repository is fully documented using **Devin DeepWiki**, which provides a s
 - Edge-case handling and design decisions
 - Database schema and queue processing model
 
-🔗 **DeepWiki:** https://deepwiki.devin.ai/your-username/sheetql-sync
+🔗 **DeepWiki:** https://deepwiki.com/harshbatra01/superjoin-synced
+
 
 If you want to understand *why* certain design choices were made—not just *what* the code does—this is the best place to start.
 
