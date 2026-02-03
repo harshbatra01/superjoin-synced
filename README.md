@@ -175,6 +175,9 @@ npm run dev
 
 ```
 ::contentReference[oaicite:0]{index=0}
+
+## 🚀 Deployment
+For instructions on hosting this application on a VPS (DigitalOcean, AWS, etc.) using Docker, please read [DEPLOYMENT.md](./DEPLOYMENT.md).
 ```
 
 ## 🙏 Thank You

@@ -28,6 +28,8 @@ class DatabaseManager {
   private isConnected: boolean = false;
 
   constructor() {
+    const isProduction = process.env.NODE_ENV === 'production';
+
     this.config = {
       host: process.env.MYSQL_HOST || 'localhost',
       port: parseInt(process.env.MYSQL_PORT || '3307', 10),
@@ -39,7 +41,12 @@ class DatabaseManager {
       waitForConnections: true,
       enableKeepAlive: true,
       keepAliveInitialDelay: 10000,
-    };
+      // Enable SSL for cloud databases (like Aiven)
+      // 'true' forces it, otherwise default to SSL in production for safety
+      ssl: (process.env.MYSQL_SSL === 'true' || isProduction)
+        ? { rejectUnauthorized: false }
+        : undefined,
+    } as DatabaseConfig & { ssl?: any };
   }
 
   /**
@@ -69,7 +76,7 @@ class DatabaseManager {
 
       // Test the connection
       await this.testConnection();
-      
+
       this.isConnected = true;
       logger.info('MySQL connection pool initialized successfully', {
         host: this.config.host,
@@ -168,7 +175,7 @@ class DatabaseManager {
     callback: (connection: PoolConnection) => Promise<T>
   ): Promise<T> {
     const connection = await this.getConnection();
-    
+
     try {
       await connection.beginTransaction();
       const result = await callback(connection);

@@ -28,19 +28,44 @@ class RedisManager {
   private isConnected: boolean = false;
 
   constructor() {
+    let connectionConfig: Partial<RedisConfig> = {};
+
+    if (process.env.REDIS_URL) {
+      try {
+        const url = new URL(process.env.REDIS_URL);
+        connectionConfig = {
+          host: url.hostname,
+          port: parseInt(url.port || '6379', 10),
+          password: url.password || undefined,
+          db: parseInt(url.pathname.slice(1) || '0', 10),
+        };
+        // Handle username if present/supported
+        if (url.username) {
+          (connectionConfig as any).username = url.username;
+        }
+        // Enable TLS if protocol is rediss:
+        if (url.protocol === 'rediss:') {
+          (connectionConfig as any).tls = { rejectUnauthorized: false };
+        }
+      } catch (e) {
+        logger.error('Invalid REDIS_URL', { error: e });
+      }
+    }
+
     this.config = {
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || '6379', 10),
-      password: process.env.REDIS_PASSWORD || undefined,
-      db: parseInt(process.env.REDIS_DB || '0', 10),
-      maxRetriesPerRequest: null, // BullMQ requirement
+      host: connectionConfig.host || process.env.REDIS_HOST || 'localhost',
+      port: connectionConfig.port || parseInt(process.env.REDIS_PORT || '6379', 10),
+      password: connectionConfig.password || process.env.REDIS_PASSWORD || undefined,
+      db: connectionConfig.db || parseInt(process.env.REDIS_DB || '0', 10),
+      maxRetriesPerRequest: null,
       enableReadyCheck: true,
       retryStrategy: (times: number) => {
-        // Exponential backoff with max 30 seconds
         const delay = Math.min(times * 1000, 30000);
         logger.warn(`Redis connection retry attempt ${times}, waiting ${delay}ms`);
         return delay;
       },
+      // Merge any other parsed config (like tls, username)
+      ...(connectionConfig as any)
     };
   }
 
@@ -57,7 +82,7 @@ class RedisManager {
     try {
       // Main client for commands
       this.client = new Redis(this.config);
-      
+
       // Separate client for BullMQ subscriber (required for event listening)
       this.subscriber = new Redis(this.config);
 
@@ -183,7 +208,7 @@ class RedisManager {
    */
   async releaseLock(key: string, value: string): Promise<boolean> {
     const client = this.getClient();
-    
+
     // Lua script for atomic check-and-delete
     const script = `
       if redis.call("get", KEYS[1]) == ARGV[1] then
@@ -192,7 +217,7 @@ class RedisManager {
         return 0
       end
     `;
-    
+
     const result = await client.eval(script, 1, key, value);
     return result === 1;
   }
@@ -208,10 +233,10 @@ class RedisManager {
   async incrementRateLimit(key: string, windowMs: number): Promise<number> {
     const client = this.getClient();
     const multi = client.multi();
-    
+
     multi.incr(key);
     multi.pexpire(key, windowMs);
-    
+
     const results = await multi.exec();
     return results?.[0]?.[1] as number || 0;
   }
@@ -252,7 +277,7 @@ class RedisManager {
   async getStats(): Promise<Record<string, string>> {
     const client = this.getClient();
     const info = await client.info();
-    
+
     const stats: Record<string, string> = {};
     info.split('\n').forEach((line) => {
       const [key, value] = line.split(':');
@@ -260,7 +285,7 @@ class RedisManager {
         stats[key.trim()] = value.trim();
       }
     });
-    
+
     return stats;
   }
 
